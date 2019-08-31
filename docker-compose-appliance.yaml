@@ -1,0 +1,17 @@
+version: '3'
+services:
+  producer:
+    depends_on:
+      - kafka
+    build:
+      context: ./producer
+    networks:
+      - spark-streaming-network
+  kafka:
+    image: spotify/kafka
+    networks:
+      - spark-streaming-network
+networks:
+  spark-streaming-network:
+    external:
+      name: spark-streaming-network

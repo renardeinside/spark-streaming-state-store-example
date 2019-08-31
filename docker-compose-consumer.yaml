@@ -1,0 +1,14 @@
+version: "3"
+services:
+  analytics-consumer:
+    build:
+      context: ./state-consumer
+      dockerfile: Dockerfile
+    networks:
+      - spark-streaming-network
+    ports:
+      - "4040:4040"
+networks:
+  spark-streaming-network:
+    external:
+      name: spark-streaming-network
