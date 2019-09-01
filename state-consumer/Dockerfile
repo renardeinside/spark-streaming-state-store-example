@@ -33,10 +33,10 @@ RUN ln -s $SPARK_DIR $SPARK_HOME && \
     ln -s /usr/bin/python3 /usr/bin/python
 
 
-RUN cd /usr/local/spark/jars && wget http://repo1.maven.org/maven2/org/apache/spark/spark-streaming-kafka-0-10-assembly_2.12/2.4.3/spark-streaming-kafka-0-10-assembly_2.12-2.4.3.jar
+RUN cd /usr/local/spark/jars && wget http://repo1.maven.org/maven2/org/apache/spark/spark-streaming-kafka-0-10-assembly_2.11/2.4.3/spark-streaming-kafka-0-10-assembly_2.11-2.4.3.jar
 RUN cd /usr/local/spark/jars && wget http://central.maven.org/maven2/org/apache/kafka/kafka-clients/2.0.0/kafka-clients-2.0.0.jar
-RUN cd /usr/local/spark/jars && wget http://central.maven.org/maven2/org/apache/spark/spark-tags_2.12/2.4.3/spark-tags_2.12-2.4.3.jar
-RUN cd /usr/local/spark/jars && wget http://central.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.12/2.4.3/spark-sql-kafka-0-10_2.12-2.4.3.jar
+RUN cd /usr/local/spark/jars && wget http://central.maven.org/maven2/org/apache/spark/spark-tags_2.11/2.4.3/spark-tags_2.11-2.4.3.jar
+RUN cd /usr/local/spark/jars && wget http://central.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.11/2.4.3/spark-sql-kafka-0-10_2.11-2.4.3.jar
 
 COPY ./target /usr/bin/app
 WORKDIR /usr/bin/app

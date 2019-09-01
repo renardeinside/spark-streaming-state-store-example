@@ -9,13 +9,14 @@
   <modules>
     <module>producer</module>
     <module>state-consumer</module>
+    <module>common</module>
   </modules>
 
   <properties>
     <spark.version>2.4.3</spark.version>
     <akka.version>2.5.21</akka.version>
-    <scala.version>2.12.8</scala.version>
-    <scala.compat.version>2.12</scala.compat.version>
+    <scala.version>2.11.12</scala.version>
+    <scala.compat.version>2.11</scala.compat.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
