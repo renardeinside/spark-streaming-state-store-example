@@ -2,10 +2,10 @@ package com.renarde.spark.examples.consumer
 
 import com.renarde.spark.examples.common._
 import com.typesafe.scalalogging.LazyLogging
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.from_json
 import org.apache.spark.sql.streaming.{GroupState, GroupStateTimeout}
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 object StateConsumer extends App with LazyLogging {
   val appName: String = "structured-consumer-example"
@@ -45,7 +45,7 @@ object StateConsumer extends App with LazyLogging {
     .filter($"userId".isNotNull)
     .as[PageVisit]
 
-  val userStatisticsStream = pageVisitsTypedStream
+  val userStatisticsStream: Dataset[UserStatistics] = pageVisitsTypedStream
     .groupByKey(_.userId)
     .mapGroupsWithState(GroupStateTimeout.NoTimeout())(updatePageVisits)
 
@@ -61,8 +61,9 @@ object StateConsumer extends App with LazyLogging {
   def updatePageVisits(
                         id: Int,
                         pageVisits: Iterator[PageVisit],
-                        state: GroupState[UserStatistics]): Int = {
-    val currentState = state.getOption.getOrElse(UserStatistics(Seq.empty))
-    UserStatistics(currentState.pageVisits ++ pageVisits.toSeq).totalVisits
+                        state: GroupState[UserStatistics]): UserStatistics = {
+    val currentState = state.getOption.getOrElse(UserStatistics(id, 0))
+    val updatedState = currentState.copy(totalVisits = currentState.totalVisits + pageVisits.length)
+    updatedState
   }
 }

@@ -10,9 +10,7 @@ package object common {
 
   case class PageVisit(userId: Int, pageUrl: String, visitedAt: Timestamp = new Timestamp(System.currentTimeMillis()))
 
-  case class UserStatistics(pageVisits: Seq[PageVisit]) {
-    val totalVisits: Int = pageVisits.length
-  }
+  case class UserStatistics(userId: Int, totalVisits: Int)
 
   implicit val pageVisitEncoder: Encoder[PageVisit] = Encoders.product[PageVisit]
   implicit val userStatisticsEncoder: Encoder[UserStatistics] = Encoders.product[UserStatistics]
