@@ -14,7 +14,7 @@ package object common {
   case class UserStatistics(userId: Int, totalEvents: Int, userEvents: Seq[PageVisit])
 
   implicit val userEventEncoder: Encoder[PageVisit] = Encoders.product[PageVisit]
-  implicit val userSessionEncoder: Encoder[UserStatistics] = Encoders.product[UserStatistics]
+  implicit val userStatisticsEncoder: Encoder[UserStatistics] = Encoders.product[UserStatistics]
 
   def generateEvent: PageVisit = {
     PageVisit(
