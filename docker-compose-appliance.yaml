@@ -1,4 +1,5 @@
-version: '3'
+version: '3.2'
+
 services:
   producer:
     depends_on:
@@ -9,6 +10,16 @@ services:
       - spark-streaming-network
   kafka:
     image: spotify/kafka
+    networks:
+      - spark-streaming-network
+  storage:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+    entrypoint: sh
+    command: -c 'mkdir -p /export/data && /usr/bin/minio server /export'
+    env_file:
+      - .env
     networks:
       - spark-streaming-network
 networks:

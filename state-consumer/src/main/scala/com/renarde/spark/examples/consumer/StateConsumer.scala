@@ -11,8 +11,17 @@ object StateConsumer extends App with LazyLogging {
 
   val spark: SparkSession = SparkSession.builder()
     .appName(appName)
+    // generic spark params
     .config("spark.driver.memory", "5g")
     .master("local[2]")
+    // implementation params
+    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+    .config("spark.hadoop.fs.s3a.path.style.access", "true")
+    .config("spark.hadoop.fs.s3a.connection.ssl.enabled", "false")
+    // service level params
+    .config("spark.hadoop.fs.s3a.endpoint", "http://storage:9000")
+    .config("spark.hadoop.fs.s3a.access.key", sys.env("MINIO_ACCESS_KEY"))
+    .config("spark.hadoop.fs.s3a.secret.key", sys.env("MINIO_SECRET_KEY"))
     .getOrCreate()
 
   import spark.implicits._
@@ -26,6 +35,7 @@ object StateConsumer extends App with LazyLogging {
     .option("kafka.bootstrap.servers", "kafka:9092")
     .option("subscribe", "visits-topic")
     .option("startingOffsets", "earliest")
+
     .load()
 
 
@@ -46,17 +56,20 @@ object StateConsumer extends App with LazyLogging {
   val consoleOutput = userStatisticsStream.writeStream
     .outputMode(OutputMode.Update)
     .trigger(Trigger.ProcessingTime("10 seconds"))
-    .foreachBatch { (batchData: Dataset[UserStatistics], _) =>
+    .option("checkpointLocation", "s3a://data/checkpoints")
+    .foreachBatch { (batchData: Dataset[UserStatistics], batchId: Long) =>
+      logger.info(s"Started working with batch id $batchId")
       batchData.sort("userId").show()
+      logger.info(s"Successfully finished working with batch id $batchId")
     }.start()
 
 
   spark.streams.awaitAnyTermination()
 
   def updateUserStatistics(
-                           id: Int,
-                           newEvents: Iterator[PageVisit],
-                           oldState: GroupState[UserStatistics]): UserStatistics = {
+                            id: Int,
+                            newEvents: Iterator[PageVisit],
+                            oldState: GroupState[UserStatistics]): UserStatistics = {
 
     var state: UserStatistics = if (oldState.exists) oldState.get else UserStatistics(id, 0, Seq.empty)
 
