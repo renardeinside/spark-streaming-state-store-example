@@ -13,7 +13,7 @@
   </modules>
 
   <properties>
-    <spark.version>2.4.3</spark.version>
+    <spark.version>2.4.4</spark.version>
     <akka.version>2.5.21</akka.version>
     <scala.version>2.11.12</scala.version>
     <scala.compat.version>2.11</scala.compat.version>

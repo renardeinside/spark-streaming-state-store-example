@@ -3,8 +3,7 @@ package com.renarde.spark.examples.consumer
 import com.renarde.spark.examples.common._
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.sql.functions.from_json
-import org.apache.spark.sql.streaming.{GroupState, GroupStateTimeout}
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.streaming.{GroupState, GroupStateTimeout, OutputMode, Trigger}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 object StateConsumer extends App with LazyLogging {
@@ -34,36 +33,40 @@ object StateConsumer extends App with LazyLogging {
 
   val rawData = preparedDS.filter($"value".isNotNull).drop("key")
 
-  val expectedSchema = new StructType()
-    .add(StructField("userId", IntegerType))
-    .add(StructField("pageUrl", StringType))
-    .add(StructField("visitedAt", TimestampType))
-
   val pageVisitsTypedStream = rawData
-    .select(from_json($"value", expectedSchema).as("data"))
+    .select(from_json($"value", userEventEncoder.schema).as("data"))
     .select("data.*")
-    .filter($"userId".isNotNull)
+    .filter($"id".isNotNull)
     .as[PageVisit]
 
-  val userStatisticsStream: Dataset[UserStatistics] = pageVisitsTypedStream
-    .groupByKey(_.userId)
-    .mapGroupsWithState(GroupStateTimeout.NoTimeout())(updatePageVisits)
-
+  val userStatisticsStream = pageVisitsTypedStream
+    .groupByKey(_.id)
+    .mapGroupsWithState(GroupStateTimeout.NoTimeout)(updateUserStatistics)
 
   val consoleOutput = userStatisticsStream.writeStream
-    .outputMode("update")
-    .format("console")
-    .start()
+    .outputMode(OutputMode.Update)
+    .trigger(Trigger.ProcessingTime("10 seconds"))
+    .foreachBatch { (batchData: Dataset[UserStatistics], _) =>
+      batchData.sort("userId").show()
+    }.start()
 
 
   spark.streams.awaitAnyTermination()
 
-  def updatePageVisits(
-                        id: Int,
-                        pageVisits: Iterator[PageVisit],
-                        state: GroupState[UserStatistics]): UserStatistics = {
-    val currentState = state.getOption.getOrElse(UserStatistics(id, 0))
-    val updatedState = currentState.copy(totalVisits = currentState.totalVisits + pageVisits.length)
-    updatedState
+  def updateUserStatistics(
+                           id: Int,
+                           newEvents: Iterator[PageVisit],
+                           oldState: GroupState[UserStatistics]): UserStatistics = {
+
+    var state: UserStatistics = if (oldState.exists) oldState.get else UserStatistics(id, 0, Seq.empty)
+
+    logger.info(s"Current state: $state")
+
+    for (event <- newEvents) {
+      state = state.copy(totalEvents = state.totalEvents + 1, userEvents = state.userEvents ++ Seq(event))
+      logger.info(s"Updating the state with new values: $state")
+      oldState.update(state)
+    }
+    state
   }
 }

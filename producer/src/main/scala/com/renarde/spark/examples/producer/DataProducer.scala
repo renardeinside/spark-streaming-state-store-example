@@ -11,7 +11,6 @@ import org.json4s.native.Serialization.write
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration._
-import scala.util.Random
 
 object DataProducer extends App with LazyLogging {
 
@@ -39,22 +38,19 @@ object DataProducer extends App with LazyLogging {
     producer.flush()
 
     logger.info("Kafka producer is ready!")
-    var visitsCounter: Long = 0
+    var eventsCounter: Long = 0
 
     val task = new Runnable {
       def run(): Unit = {
 
-        val amountOfVisits = new Random().nextInt(3) + 1
-        val newVisits = generateVisits(amountOfVisits)
+        val visitEvent = generateEvent
 
-        visitsCounter += newVisits.length
+        eventsCounter += 1
 
-        newVisits.foreach { visit =>
-          val visitData = new ProducerRecord[String, String]("visits-topic", write(visit))
-          producer.send(visitData)
-        }
+        val visitEventMessage = new ProducerRecord[String, String]("visits-topic", write(visitEvent))
+        producer.send(visitEventMessage)
 
-        logger.info(s"New visits data came, total: $visitsCounter visits")
+        logger.info(s"New visits data came, total: $eventsCounter visits")
       }
     }
 
