@@ -35,7 +35,6 @@ object StateConsumer extends App with LazyLogging {
     .option("kafka.bootstrap.servers", "kafka:9092")
     .option("subscribe", "visits-topic")
     .option("startingOffsets", "earliest")
-
     .load()
 
 
@@ -55,13 +54,9 @@ object StateConsumer extends App with LazyLogging {
 
   val consoleOutput = userStatisticsStream.writeStream
     .outputMode(OutputMode.Update)
-    .trigger(Trigger.ProcessingTime("10 seconds"))
     .option("checkpointLocation", "s3a://data/checkpoints")
-    .foreachBatch { (batchData: Dataset[UserStatistics], batchId: Long) =>
-      logger.info(s"Started working with batch id $batchId")
-      batchData.sort("userId").show()
-      logger.info(s"Successfully finished working with batch id $batchId")
-    }.start()
+    .trigger(Trigger.ProcessingTime("10 seconds"))
+    .foreachBatch(printBatch _).start()
 
 
   spark.streams.awaitAnyTermination()
@@ -81,5 +76,11 @@ object StateConsumer extends App with LazyLogging {
       oldState.update(state)
     }
     state
+  }
+
+  def printBatch(batchData: Dataset[UserStatistics], batchId: Long): Unit = {
+    logger.info(s"Started working with batch id $batchId")
+    batchData.sort("userId").show()
+    logger.info(s"Successfully finished working with batch id $batchId")
   }
 }
