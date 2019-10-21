@@ -11,7 +11,7 @@ package object common {
 
   case class PageVisit(id: Int, url: String, timestamp: Timestamp = Timestamp.from(Instant.now()))
 
-  case class UserStatistics(userId: Int, totalEvents: Int, userEvents: Seq[PageVisit])
+  case class UserStatistics(userId: Int, userEvents: Seq[PageVisit], totalEvents: Int)
 
   implicit val userEventEncoder: Encoder[PageVisit] = Encoders.product[PageVisit]
   implicit val userStatisticsEncoder: Encoder[UserStatistics] = Encoders.product[UserStatistics]

@@ -13,6 +13,7 @@ object StateConsumer extends App with LazyLogging {
     .appName(appName)
     // generic spark params
     .config("spark.driver.memory", "5g")
+    .config("spark.sql.shuffle.partitions","2")
     .master("local[2]")
     // implementation params
     .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
@@ -66,12 +67,12 @@ object StateConsumer extends App with LazyLogging {
                             newEvents: Iterator[PageVisit],
                             oldState: GroupState[UserStatistics]): UserStatistics = {
 
-    var state: UserStatistics = if (oldState.exists) oldState.get else UserStatistics(id, 0, Seq.empty)
+    var state: UserStatistics = if (oldState.exists) oldState.get else UserStatistics(id, Seq.empty, 0)
 
     logger.info(s"Current state: $state")
 
     for (event <- newEvents) {
-      state = state.copy(totalEvents = state.totalEvents + 1, userEvents = state.userEvents ++ Seq(event))
+      state = state.copy(userEvents = state.userEvents ++ Seq(event), totalEvents = state.totalEvents + 1)
       logger.info(s"Updating the state with new values: $state")
       oldState.update(state)
     }
