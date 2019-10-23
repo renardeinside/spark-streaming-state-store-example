@@ -5,20 +5,21 @@ import java.time.Instant
 
 import org.apache.spark.sql.{Encoder, Encoders}
 
-package object common {
+package object consumer {
 
   val random = new scala.util.Random
 
   case class PageVisit(id: Int, url: String, timestamp: Timestamp = Timestamp.from(Instant.now()))
 
-  case class UserStatistics(userId: Int, userEvents: Seq[PageVisit], totalEvents: Int)
+  case class UserStatistics(userId: Int, totalEvents: Int)
+  case class UserGroupState(groupState: UserStatistics)
 
   implicit val userEventEncoder: Encoder[PageVisit] = Encoders.product[PageVisit]
   implicit val userStatisticsEncoder: Encoder[UserStatistics] = Encoders.product[UserStatistics]
 
-  def generateEvent: PageVisit = {
+  def generateEvent(id: Int): PageVisit = {
     PageVisit(
-      id = generateBetween(0, 5),
+      id = id,
       url = s"https://www.my-service.org/${generateBetween(100, 200)}"
     )
   }
