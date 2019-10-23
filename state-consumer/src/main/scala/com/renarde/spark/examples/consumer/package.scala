@@ -14,7 +14,7 @@ package object consumer {
   case class UserStatistics(userId: Int, visits: Seq[PageVisit], totalVisits: Int)
   case class UserGroupState(groupState: UserStatistics)
 
-  implicit val userEventEncoder: Encoder[PageVisit] = Encoders.product[PageVisit]
+  implicit val pageVisitEncoder: Encoder[PageVisit] = Encoders.product[PageVisit]
   implicit val userStatisticsEncoder: Encoder[UserStatistics] = Encoders.product[UserStatistics]
 
   def generateEvent(id: Int): PageVisit = {

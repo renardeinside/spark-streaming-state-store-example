@@ -44,9 +44,10 @@ object StateConsumer extends App with Logging {
 
   visitsStream.addData(initialBatch)
 
+  val noTimeout = GroupStateTimeout.NoTimeout
   val userStatisticsStream = pageVisitsTypedStream
     .groupByKey(_.id)
-    .mapGroupsWithState(GroupStateTimeout.NoTimeout)(updateUserStatistics)
+    .mapGroupsWithState(noTimeout)(updateUserStatistics)
 
   query = userStatisticsStream.writeStream
     .outputMode(OutputMode.Update())
