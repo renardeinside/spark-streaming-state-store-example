@@ -58,7 +58,7 @@ object StateConsumer extends App with Logging {
 
   processDataWithLock(query)
 
-  StateDatasetProvider(spark, checkpointLocation, query, query.lastProgress.batchId).dataset.sort($"userId").show()
+  StateDatasetProvider(spark, checkpointLocation, query).dataset.sort($"userId").show()
 
   val additionalBatch = Seq(
     generateEvent(1),
@@ -69,7 +69,7 @@ object StateConsumer extends App with Logging {
   visitsStream.addData(additionalBatch)
 
   processDataWithLock(query)
-  StateDatasetProvider(spark, checkpointLocation, query, query.lastProgress.batchId).dataset.sort($"userId").show()
+  StateDatasetProvider(spark, checkpointLocation, query).dataset.sort($"userId").show()
 
 
   def updateUserStatistics(

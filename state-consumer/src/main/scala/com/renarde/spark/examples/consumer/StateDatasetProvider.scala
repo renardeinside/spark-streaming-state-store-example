@@ -6,7 +6,7 @@ import org.apache.spark.sql.streaming.StreamingQuery
 import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
-case class StateDatasetProvider(spark: SparkSession, checkpointLocation: String, query: StreamingQuery, storeVersion: Long) {
+case class StateDatasetProvider(spark: SparkSession, checkpointLocation: String, query: StreamingQuery) {
 
   private val context = spark.sqlContext
 
@@ -22,7 +22,7 @@ case class StateDatasetProvider(spark: SparkSession, checkpointLocation: String,
   val stateStoreId = StateStoreId(checkpointLocation + "/state", operatorId = 0, partitionId = 0)
   val storeProviderId = StateStoreProviderId(stateStoreId, query.runId)
 
-  val store: StateStore = StateStore.get(storeProviderId, keySchema, valueSchema, None, storeVersion, storeConf, hadoopConf)
+  val store: StateStore = StateStore.get(storeProviderId, keySchema, valueSchema, None, query.lastProgress.batchId, storeConf, hadoopConf)
 
   val dataset: Dataset[UserStatistics] = store.iterator().map { rowPair =>
     val statisticsEncoder = ExpressionEncoder[UserGroupState].resolveAndBind()
