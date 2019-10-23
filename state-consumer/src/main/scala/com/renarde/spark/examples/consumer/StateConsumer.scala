@@ -96,7 +96,7 @@ object StateConsumer extends App with Logging {
       log.info(s"Waiting for the query to finish processing, current status is ${query.status.message}")
       Thread.sleep(1)
     }
-    log.info("Locking the thread for another 5 secs for query to get finished")
+    log.info("Locking the thread for another 5 seconds for state operations cleanup")
     Thread.sleep(5000)
   }
 
