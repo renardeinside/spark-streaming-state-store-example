@@ -11,7 +11,7 @@ package object consumer {
 
   case class PageVisit(id: Int, url: String, timestamp: Timestamp = Timestamp.from(Instant.now()))
 
-  case class UserStatistics(userId: Int, totalEvents: Int)
+  case class UserStatistics(userId: Int, visits: Seq[PageVisit], totalVisits: Int)
   case class UserGroupState(groupState: UserStatistics)
 
   implicit val userEventEncoder: Encoder[PageVisit] = Encoders.product[PageVisit]

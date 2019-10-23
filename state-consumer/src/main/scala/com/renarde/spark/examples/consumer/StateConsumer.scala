@@ -76,10 +76,10 @@ object StateConsumer extends App with Logging {
                             newEvents: Iterator[PageVisit],
                             oldState: GroupState[UserStatistics]): UserStatistics = {
 
-    var state: UserStatistics = if (oldState.exists) oldState.get else UserStatistics(id, 0)
+    var state: UserStatistics = if (oldState.exists) oldState.get else UserStatistics(id, Seq.empty, 0)
 
-    for (_ <- newEvents) {
-      state = state.copy(totalEvents = state.totalEvents + 1)
+    for (event <- newEvents) {
+      state = state.copy(visits = state.visits ++ Seq(event), totalVisits = state.totalVisits + 1)
       oldState.update(state)
     }
     state
